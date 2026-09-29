@@ -68,30 +68,44 @@ InsightDownloader-update.zip
 
 Установщик повторно запускать не требуется.
 
-### Как указать GitHub-репозиторий
+### Как приложение узнаёт про GitHub
 
-При `build_release.cmd` репозиторий автоматически берётся из Git remote `origin`.
+GitHub не зашит в исходники автоматически. Во время production build `build_release.ps1`
+определяет репозиторий и записывает его в `update_config.json` рядом с EXE.
 
-Например:
+Порядок определения:
+
+1. `INSIGHT_GITHUB_REPOSITORY`;
+2. `release_config.json`;
+3. Git remote `origin`;
+4. запрос `OWNER/REPOSITORY` прямо во время `build_release.cmd`.
+
+Например, один раз можно создать:
+
+```json
+{
+  "repository": "USERNAME/InsightDownloader"
+}
+```
+
+в `release_config.json`. После этого все следующие сборки используют этот репозиторий.
+
+Либо Git:
 
 ```powershell
 git remote add origin https://github.com/USERNAME/InsightDownloader.git
 ```
 
-Либо перед сборкой можно явно задать:
+Либо только на текущую консоль:
 
 ```powershell
 $env:INSIGHT_GITHUB_REPOSITORY="USERNAME/InsightDownloader"
 .\build_release.cmd
 ```
 
-В готовую сборку попадёт файл:
-
-```text
-update_config.json
-```
-
-Если репозиторий не определён, приложение просто не проверяет обновления.
+В установленной программе `app/core/update_service.py` читает `update_config.json`, обращается к
+`https://api.github.com/repos/OWNER/REPOSITORY/releases/latest`, сравнивает `tag_name` с текущей
+версией приложения и ищет asset `InsightDownloader-update.zip`.
 
 ## Выпуск новой версии
 
