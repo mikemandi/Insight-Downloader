@@ -1,0 +1,4 @@
+PySide6>=6.8,<7
+yt-dlp[default]>=2026.8.19
+yt-dlp-getpot-wpc
+packaging>=24.2

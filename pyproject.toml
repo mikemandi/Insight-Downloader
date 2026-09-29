@@ -1,0 +1,18 @@
+[project]
+name = "insight-downloader"
+version = "0.5.0"
+description = "Modern desktop media downloader powered by yt-dlp"
+requires-python = ">=3.11"
+dependencies = [
+    "PySide6>=6.8,<7",
+    "yt-dlp[default]>=2026.8.19",
+    "yt-dlp-getpot-wpc",
+    "packaging>=24.2",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
