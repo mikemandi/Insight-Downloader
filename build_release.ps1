@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
 $Python = ".\.venv\Scripts\python.exe"
@@ -26,7 +26,7 @@ if (-not (Test-Path "bin\qjs.exe")) {
 }
 if (-not (Test-Path "bin\ffmpeg.exe") -or -not (Test-Path "bin\ffprobe.exe")) {
     Write-Host "Media runtime is missing in bin/. Downloading the latest published runtime..." -ForegroundColor Yellow
-    & $Python tools\fetch_media_runtime.py
+    & $Python -m tools.fetch_media_runtime
     if ($LASTEXITCODE -ne 0) { throw "Could not prepare FFmpeg/ffprobe for the release build." }
 }
 if (-not (Test-Path "bin\ffmpeg.exe") -or -not (Test-Path "bin\ffprobe.exe")) {
@@ -169,3 +169,4 @@ Write-Host "Release files:"
 Get-ChildItem $ReleaseDir | Select-Object Name, @{N='MB';E={[Math]::Round($_.Length / 1MB, 1)}} | Format-Table -AutoSize
 Write-Host ""
 Write-Host "Production release completed." -ForegroundColor Green
+
