@@ -1,187 +1,129 @@
-# Insight Downloader
+# Insight Downloader 0.7.2
 
-Insight Downloader — Windows-приложение для скачивания публично доступного видео и аудио через `yt-dlp`.
+Insight Downloader is a compact Windows desktop downloader built on `yt-dlp`, PySide6 Essentials and FFmpeg.
+Version 0.7 focuses on product-grade UI/UX while keeping the lightweight runtime architecture introduced in 0.6.
 
-Текущая версия: **0.5.0**.
+## Product UI
 
-## Возможности
+The main window is intentionally fixed at **1000×720** and does not maximize. The complete download flow fits in one window without scrolling:
 
-- Видео в доступных качествах
-- MP3 и WAV
-- YouTube с актуальным PO Token pipeline
-- VK Video и другие источники, поддерживаемые `yt-dlp`
-- Тёмная / светлая / системная тема
-- Drag & Drop ссылок
-- FFmpeg / Deno runtime status
-- Автоматическая проверка обновлений через GitHub Releases
-- Обновление приложения без повторного запуска установщика
-- Windows installer через Inno Setup
-- Настоящая Windows-иконка для EXE, ярлыков и установщика
+1. Paste or drop a link.
+2. Analyze it.
+3. Choose Video / MP3 / WAV.
+4. Pick video or audio quality.
+5. Download.
 
-## Разработка
+The 0.7 design system uses:
 
-```powershell
+- Segoe UI Variable / Segoe UI
+- neutral dark/light surfaces
+- minimal borders and separators
+- one restrained purple primary accent
+- subtle hover feedback
+- explicit select chevrons
+- modal bottom-sheet errors
+- compact success states instead of permanent 100% progress bars
+- system / dark / light themes
+
+## Audio quality
+
+MP3 presets:
+
+- 320 kbps
+- 256 kbps
+- 192 kbps
+- 128 kbps
+
+WAV presets:
+
+- source sample rate · 16-bit PCM
+- 48 kHz · 24-bit PCM
+- 48 kHz · 16-bit PCM
+- 44.1 kHz · 16-bit PCM
+
+Insight downloads the best available source audio first and performs the selected conversion with FFmpeg.
+
+## Settings
+
+Settings contains normal user-facing options only:
+
+- theme
+- default download directory
+- automatic update checks
+- current version / update check
+
+Technical runtime information is hidden under **Diagnostics**.
+
+## Development setup
+
+Windows 10/11 x64 is the primary release target.
+
+```bat
 setup_windows.cmd
 run.cmd
 ```
 
-Для FFmpeg положите `ffmpeg.exe` и `ffprobe.exe` в `bin/` или установите их в PATH.
-Deno может лежать в `bin/` или быть установлен в PATH.
-
-## Иконка приложения
-
-Главная иконка:
+For local media downloads, place:
 
 ```text
-app/assets/insight.ico
+bin/ffmpeg.exe
+bin/ffprobe.exe
 ```
 
-ICO содержит размеры 16, 20, 24, 32, 40, 48, 64, 128 и 256 px.
-PyInstaller использует её для `Insight Downloader.exe`, а Inno Setup — для установщика и ярлыков.
+QuickJS is prepared automatically by the setup script.
 
-## Система обновлений
+## Production release
 
-Обновления работают через **GitHub Releases**.
+Requirements:
 
-Приложение при запуске делает фоновый запрос к:
+- Python 3.11
+- Inno Setup 6
+- Git
+- GitHub CLI (`gh`) for publishing
+- `bin/ffmpeg.exe`
+- `bin/ffprobe.exe`
 
-```text
-https://api.github.com/repos/OWNER/REPOSITORY/releases/latest
-```
+Build:
 
-Если версия релиза новее текущей и в релизе есть:
-
-```text
-InsightDownloader-update.zip
-```
-
-в шапке появляется кнопка `Обновить · X.Y.Z`, а Windows получает уведомление.
-
-После подтверждения приложение:
-
-1. скачивает update ZIP;
-2. проверяет SHA-256, если digest доступен через GitHub API или опубликован `.sha256`;
-3. запускает `InsightUpdater.exe` из временной папки;
-4. закрывает основной процесс;
-5. заменяет файлы приложения;
-6. запускает новую версию.
-
-Установщик повторно запускать не требуется.
-
-### Как приложение узнаёт про GitHub
-
-GitHub не зашит в исходники автоматически. Во время production build `build_release.ps1`
-определяет репозиторий и записывает его в `update_config.json` рядом с EXE.
-
-Порядок определения:
-
-1. `INSIGHT_GITHUB_REPOSITORY`;
-2. `release_config.json`;
-3. Git remote `origin`;
-4. запрос `OWNER/REPOSITORY` прямо во время `build_release.cmd`.
-
-Например, один раз можно создать:
-
-```json
-{
-  "repository": "USERNAME/InsightDownloader"
-}
-```
-
-в `release_config.json`. После этого все следующие сборки используют этот репозиторий.
-
-Либо Git:
-
-```powershell
-git remote add origin https://github.com/USERNAME/InsightDownloader.git
-```
-
-Либо только на текущую консоль:
-
-```powershell
-$env:INSIGHT_GITHUB_REPOSITORY="USERNAME/InsightDownloader"
-.\build_release.cmd
-```
-
-В установленной программе `app/core/update_service.py` читает `update_config.json`, обращается к
-`https://api.github.com/repos/OWNER/REPOSITORY/releases/latest`, сравнивает `tag_name` с текущей
-версией приложения и ищет asset `InsightDownloader-update.zip`.
-
-## Выпуск новой версии
-
-Версия хранится централизованно. Перед новым релизом:
-
-```powershell
-set_version.cmd 0.5.1
-```
-
-Команда обновит runtime version и `pyproject.toml`. Windows version resource генерируется автоматически при сборке.
-
-## Production build
-
-Сначала установите Inno Setup:
-
-```powershell
-winget install --id JRSoftware.InnoSetup -e
-```
-
-После этого:
-
-```powershell
+```bat
 build_release.cmd
 ```
 
-Скрипт создаёт:
+Expected output:
 
 ```text
 release/
-├── InsightDownloaderSetup-v0.5.0.exe
+├── InsightDownloaderSetup-v0.7.2.exe
 ├── InsightDownloader-update.zip
-└── InsightDownloader-update.zip.sha256
+├── InsightDownloader-update.zip.sha256
+├── InsightMediaRuntime.7z
+└── InsightMediaRuntime.7z.sha256
 ```
 
-`InsightDownloaderSetup-v0.5.0.exe` — файл для новых пользователей.
+Publish:
 
-`InsightDownloader-update.zip` — payload для встроенного обновления.
-
-## Публикация GitHub Release
-
-После `build_release.cmd` и `gh auth login`:
-
-```powershell
+```bat
 publish_release.cmd
 ```
 
-Он создаст тег `v0.5.0` и прикрепит installer + update ZIP + checksum.
+## Distribution architecture
 
-## Куда устанавливается приложение
+The main installer contains the application, Qt Essentials, yt-dlp and QuickJS, but not FFmpeg.
+FFmpeg is distributed once as `InsightMediaRuntime.7z` and installed to the user's local app data on first use.
+Normal application updates therefore do not re-download the media runtime.
 
-Установщик использует per-user установку:
+## YouTube
 
-```text
-%LOCALAPPDATA%\Programs\Insight Downloader
-```
+YouTube support uses:
 
-Поэтому:
+- yt-dlp
+- yt-dlp-ejs
+- QuickJS-NG
+- WPC PO Token provider
+- a managed Chromium instance for token acquisition
 
-- UAC обычно не нужен;
-- обновлятор может заменять файлы без прав администратора;
-- установка не требует Python.
+Insight does not read the user's Chrome cookie database.
 
-## Структура обновления
+## Legal
 
-```text
-app/core/update_service.py   # GitHub Releases API, download, SHA-256
-app/core/update_apply.py     # запуск updater helper
-app/updater_main.py          # замена файлов после выхода приложения
-app/ui/update_dialog.py      # окно обновления
-installer/InsightDownloader.iss
-build_release.ps1
-publish_release.ps1
-```
-
-## Важное перед публичным релизом
-
-Если вы распространяете FFmpeg вместе с приложением, проверьте лицензию конкретной FFmpeg-сборки и положите необходимые third-party notices/licenses в дистрибутив.
-
-Windows SmartScreen может показывать предупреждение для неподписанного `.exe`. Для публичного коммерческого релиза следующий production-шаг — Authenticode code signing установщика и EXE.
+Use Insight Downloader only for content you are permitted to save. The application does not bypass DRM.

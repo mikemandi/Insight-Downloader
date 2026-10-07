@@ -1,13 +1,14 @@
 [project]
 name = "insight-downloader"
-version = "0.5.0"
+version = "0.7.2"
 description = "Modern desktop media downloader powered by yt-dlp"
 requires-python = ">=3.11"
 dependencies = [
-    "PySide6>=6.8,<7",
+    "PySide6-Essentials>=6.8,<7",
     "yt-dlp[default]>=2026.8.19",
-    "yt-dlp-getpot-wpc",
+    "yt-dlp-getpot-wpc==1.1.2",
     "packaging>=24.2",
+    "py7zr>=1.0,<2",
 ]
 
 [tool.ruff]

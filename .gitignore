@@ -1,17 +1,33 @@
+﻿# Python
 .venv/
+venv/
 __pycache__/
 *.py[cod]
 *.pyo
-*.pyd
-*.log
+
+# Build / packaging
 build/
 dist/
+release/
 *.spec
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
-bin/*.exe
+
+# Local release configuration
+release_config.json
+
+# Local runtimes / binaries
+bin/*
 !bin/PUT_RUNTIME_HERE.txt
 
-release/
+# IDE
+.vscode/
+.idea/
+
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS
+Thumbs.db
+.DS_Store
+Desktop.ini

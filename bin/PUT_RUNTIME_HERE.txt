@@ -1,0 +1,11 @@
+Development / release build inputs (Windows x64):
+
+- ffmpeg.exe
+- ffprobe.exe
+
+QuickJS (qjs.exe) is fetched automatically by setup_windows.cmd / build_release.cmd.
+
+Important in v0.6:
+FFmpeg is NOT shipped inside the main installer. build_release.cmd packs ffmpeg.exe + ffprobe.exe
+into release/InsightMediaRuntime.7z. The installed app downloads this component only when
+it is actually needed for the first download.

@@ -2,12 +2,12 @@
 setlocal
 cd /d "%~dp0"
 
-echo [Insight Downloader] Preparing environment...
+echo [Insight Downloader] Preparing development environment...
 
 where py >nul 2>&1
 if errorlevel 1 (
     echo Python Launcher was not found.
-    echo Install Python 3.11 or newer from python.org and run this file again.
+    echo Install Python 3.11 or newer and run this file again.
     pause
     exit /b 1
 )
@@ -31,22 +31,12 @@ if errorlevel 1 goto :error
 ".venv\Scripts\python.exe" -m pip install -r requirements.txt
 if errorlevel 1 goto :error
 
-where deno >nul 2>&1
-if errorlevel 1 (
-    echo [3/3] Deno was not found. Trying to install it with winget...
-    where winget >nul 2>&1
-    if errorlevel 1 (
-        echo winget is not available. Install Deno manually from deno.com.
-    ) else (
-        winget install --id DenoLand.Deno -e --accept-package-agreements --accept-source-agreements
-    )
-) else (
-    echo [3/3] Deno is already installed.
-)
+echo [3/3] Preparing lightweight QuickJS runtime...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\tools\fetch_qjs.ps1"
+if errorlevel 1 goto :error
 
 echo.
 echo Setup complete.
-echo If Deno was installed just now, restart the terminal before launching YouTube downloads.
 echo Run: run.cmd
 pause
 exit /b 0

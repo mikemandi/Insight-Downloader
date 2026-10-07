@@ -7,7 +7,7 @@ from pathlib import Path
 from packaging.version import Version
 
 if len(sys.argv) != 2:
-    raise SystemExit("Usage: python tools/set_version.py 0.5.1")
+    raise SystemExit("Usage: python tools/set_version.py 0.6.1")
 
 version = str(Version(sys.argv[1]))
 if any(ch in version for ch in "+-"):

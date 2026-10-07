@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 APP_NAME = "Insight Downloader"
-APP_ID = "InsightDevelopment.InsightDownloader"
+APP_ID = "InsightDevelopment.InsightDownloader.Desktop"
 PUBLISHER = "Insight Development"
 
 # Before publishing releases, set this to your public GitHub repository, e.g.

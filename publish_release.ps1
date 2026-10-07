@@ -10,16 +10,24 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
     throw "GitHub CLI (gh) not found. Install it and run 'gh auth login'."
 }
 
+$Assets = @(
+    "release\InsightDownloader-update.zip",
+    "release\InsightDownloader-update.zip.sha256",
+    "release\InsightMediaRuntime.7z",
+    "release\InsightMediaRuntime.7z.sha256"
+)
 $Setup = "release\InsightDownloaderSetup-v$Version.exe"
-$UpdateZip = "release\InsightDownloader-update.zip"
-$Checksum = "release\InsightDownloader-update.zip.sha256"
-
-if (-not (Test-Path $UpdateZip)) {
-    throw "Release files not found. Run build_release.cmd first."
-}
-
-$Assets = @($UpdateZip, $Checksum)
 if (Test-Path $Setup) { $Assets += $Setup }
 
-& gh release create $Tag @Assets --title "Insight Downloader $Tag" --generate-notes
-Write-Host "Release $Tag published."
+foreach ($Asset in $Assets) {
+    if (-not (Test-Path $Asset)) { throw "Missing release asset: $Asset. Run build_release.cmd first." }
+}
+
+$NotesArgs = @("--generate-notes")
+if (Test-Path "CHANGELOG.md") {
+    $NotesArgs = @("--notes-file", "CHANGELOG.md")
+}
+
+& gh release create $Tag @Assets --title "Insight Downloader $Tag" @NotesArgs
+if ($LASTEXITCODE -ne 0) { throw "GitHub release publish failed." }
+Write-Host "Release $Tag published." -ForegroundColor Green
