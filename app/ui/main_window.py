@@ -29,6 +29,7 @@ from app.core.extractor import ExtractWorker, ThumbnailWorker
 from app.core.formatting import format_duration, format_eta, human_bytes, human_speed
 from app.core.media import MediaInfo
 from app.core.runtime import find_ffmpeg_dir, open_path, resource_path
+from app.core.runtime_manager import MediaRuntimeInstallWorker
 from app.core.update_apply import can_self_update, launch_self_update
 from app.core.update_service import (
     UpdateCheckWorker,
@@ -72,6 +73,8 @@ class MainWindow(QMainWindow):
         self.update_info: UpdateInfo | None = None
         self.update_dialog: UpdateDialog | None = None
         self.runtime_dialog: RuntimeInstallDialog | None = None
+        self.runtime_bootstrap_worker: MediaRuntimeInstallWorker | None = None
+        self.runtime_bootstrap_error: str | None = None
         self._update_tray: QSystemTrayIcon | None = None
         self.last_download_path: Path | None = None
         self.output_dir = Path(self.settings.value("output_dir", str(Path.home() / "Downloads")))
@@ -95,6 +98,7 @@ class MainWindow(QMainWindow):
         self._connect_system_theme_listener()
         self._install_shortcuts()
         self._schedule_update_check()
+        self._schedule_media_runtime_bootstrap()
 
     # ------------------------------------------------------------------ UI
 
@@ -491,6 +495,41 @@ class MainWindow(QMainWindow):
         self.auto_updates = bool(enabled)
         self.settings.setValue("auto_updates", self.auto_updates)
 
+    # ------------------------------------------------------- media runtime
+
+    def _schedule_media_runtime_bootstrap(self) -> None:
+        """Prepare FFmpeg automatically in production without bloating the installer."""
+        if find_ffmpeg_dir() is not None or not updates_configured():
+            return
+        # Give the main window time to appear before doing network work.
+        QTimer.singleShot(2200, self._bootstrap_media_runtime)
+
+    def _bootstrap_media_runtime(self) -> None:
+        if find_ffmpeg_dir() is not None:
+            return
+        if self.runtime_bootstrap_worker and self.runtime_bootstrap_worker.isRunning():
+            return
+
+        self.runtime_bootstrap_error = None
+        worker = MediaRuntimeInstallWorker(self)
+        worker.succeeded.connect(self._background_runtime_installed)
+        worker.failed.connect(self._background_runtime_failed)
+        self.runtime_bootstrap_worker = worker
+        self.toast.show_message("Подготавливаем медиадвижок в фоне…")
+        worker.start()
+
+    def _background_runtime_installed(self, _path: str) -> None:
+        self.runtime_bootstrap_error = None
+        self.toast.show_message("Медиадвижок готов")
+        if self._pending_download_after_runtime:
+            self._pending_download_after_runtime = False
+            QTimer.singleShot(120, self._begin_download)
+
+    def _background_runtime_failed(self, message: str) -> None:
+        # Do not interrupt startup. If the user starts a download, the normal
+        # runtime dialog will explain the problem and allow an explicit retry.
+        self.runtime_bootstrap_error = message
+
     # -------------------------------------------------------------- updates
 
     def _schedule_update_check(self) -> None:
@@ -777,6 +816,9 @@ class MainWindow(QMainWindow):
 
         if find_ffmpeg_dir() is None:
             self._pending_download_after_runtime = True
+            if self.runtime_bootstrap_worker and self.runtime_bootstrap_worker.isRunning():
+                self.toast.show_message("Медиадвижок ещё устанавливается…")
+                return
             self._install_media_runtime()
             return
 

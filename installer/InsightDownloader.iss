@@ -1,5 +1,5 @@
 #ifndef MyAppVersion
-  #define MyAppVersion "0.7.2"
+  #define MyAppVersion "0.7.3"
 #endif
 
 #define MyAppName "Insight Downloader"

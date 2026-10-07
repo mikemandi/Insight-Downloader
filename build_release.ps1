@@ -17,11 +17,20 @@ Write-Host "[0/7] Preparing build tools..."
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\tools\fetch_qjs.ps1"
 & $Python tools\generate_version_info.py | Out-Null
 
+# Fail the release early if the YouTube PO-token provider cannot be imported.
+& $Python -c "import nodriver; import yt_dlp_plugins.extractor.getpot_wpc; print('YouTube WPC provider: OK')"
+if ($LASTEXITCODE -ne 0) { throw "YouTube WPC PO-token provider is not available in the build environment." }
+
 if (-not (Test-Path "bin\qjs.exe")) {
     throw "bin\qjs.exe is missing. QuickJS is required for YouTube support."
 }
 if (-not (Test-Path "bin\ffmpeg.exe") -or -not (Test-Path "bin\ffprobe.exe")) {
-    throw "bin\ffmpeg.exe and bin\ffprobe.exe are required to create InsightMediaRuntime.7z."
+    Write-Host "Media runtime is missing in bin/. Downloading the latest published runtime..." -ForegroundColor Yellow
+    & $Python tools\fetch_media_runtime.py
+    if ($LASTEXITCODE -ne 0) { throw "Could not prepare FFmpeg/ffprobe for the release build." }
+}
+if (-not (Test-Path "bin\ffmpeg.exe") -or -not (Test-Path "bin\ffprobe.exe")) {
+    throw "bin\ffmpeg.exe and bin\ffprobe.exe are still missing."
 }
 
 if (Test-Path "dist") { Remove-Item "dist" -Recurse -Force }
@@ -39,6 +48,8 @@ Write-Host "[1/7] Building lightweight desktop app..."
     --version-file "installer\windows_version_info.txt" `
     --paths "." `
     --collect-submodules yt_dlp_plugins `
+    --hidden-import yt_dlp_plugins.extractor.getpot_wpc `
+    --collect-all nodriver `
     --collect-data yt_dlp_ejs `
     --hidden-import yt_dlp_ejs `
     --exclude-module tkinter `
@@ -78,6 +89,11 @@ if (-not $Repository) {
                 $Repository = ($Matches.repo -replace "\.git$", "")
             }
         }
+    } catch {}
+}
+if (-not $Repository) {
+    try {
+        $Repository = (& $Python -c "from app.config import UPDATE_REPOSITORY; print(UPDATE_REPOSITORY)").Trim()
     } catch {}
 }
 if (-not $Repository) {

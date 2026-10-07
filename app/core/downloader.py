@@ -102,10 +102,21 @@ class DownloadWorker(QThread):
                 self.failed.emit(friendly_error(str(exc)))
 
     def _video_options(self) -> dict[str, Any]:
+        # Prefer a high-quality adaptive video+audio pair.  YouTube normally
+        # exposes 1080p/1440p/2160p as separate video-only streams, so relying
+        # on the legacy combined "best" format can cap quality around 360p.
         if self.height:
-            selector = f"bestvideo[height<={self.height}]+bestaudio/best[height<={self.height}]/best"
+            limit = f"[height<={self.height}]"
+            selector = (
+                f"bestvideo{limit}[ext=mp4]+bestaudio[ext=m4a]/"
+                f"bestvideo{limit}+bestaudio/"
+                f"best{limit}/best"
+            )
         else:
-            selector = "bestvideo+bestaudio/best"
+            selector = (
+                "bestvideo[ext=mp4]+bestaudio[ext=m4a]/"
+                "bestvideo+bestaudio/best"
+            )
         return {
             "format": selector,
             "merge_output_format": "mp4",

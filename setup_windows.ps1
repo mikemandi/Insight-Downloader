@@ -8,6 +8,7 @@ if (-not (Test-Path ".venv\Scripts\python.exe")) {
 & ".\.venv\Scripts\python.exe" -m pip install --upgrade pip
 & ".\.venv\Scripts\python.exe" -m pip install -r requirements.txt
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\tools\fetch_qjs.ps1"
+& ".\.venv\Scripts\python.exe" ".\tools\fetch_media_runtime.py"
 
 Write-Host "Setup complete."
-Write-Host "QuickJS replaces the much larger Deno runtime in v0.6."
+Write-Host "QuickJS and the media runtime are ready."

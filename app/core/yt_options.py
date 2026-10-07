@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.core.runtime import find_qjs, is_youtube_url
+from app.core.runtime import find_chrome, find_qjs, is_youtube_url
 
 
 def common_options(url: str) -> dict[str, Any]:
@@ -13,17 +13,36 @@ def common_options(url: str) -> dict[str, Any]:
     }
 
     if is_youtube_url(url):
-        # mweb + WPC PO Token provider remains the most reliable path we use
-        # for public YouTube downloads. The provider launches its own browser
-        # and never reads the user's Chrome cookie database.
-        options["extractor_args"] = {
-            "youtube": {
-                "player_client": ["mweb"],
-            }
+        # Do not force mweb as the only YouTube client. When the PO-token provider
+        # is unavailable or fails to start, mweb can expose only a very small
+        # subset of formats (often the legacy low-resolution progressive stream).
+        #
+        # We ask yt-dlp for its current defaults first, keep web_embedded as an
+        # additional compatibility fallback, and still include mweb so the WPC
+        # provider can mint GVS PO tokens and unlock adaptive high-resolution
+        # streams when available.
+        youtube_args: dict[str, list[str]] = {
+            "player_client": ["default", "web_embedded", "mweb"],
+            "fetch_pot": ["always"],
         }
 
-        # QuickJS-NG is ~2 MB on Windows, dramatically smaller than bundling
-        # a full Deno runtime while still being supported by yt-dlp-ejs.
+        extractor_args: dict[str, dict[str, list[str]]] = {
+            "youtube": youtube_args,
+        }
+
+        # WPC can auto-discover Chrome, but an explicit path is substantially more
+        # reliable in a frozen Windows build and avoids falling back to mweb
+        # without a usable PO token provider.
+        chrome = find_chrome()
+        if chrome:
+            extractor_args["youtubepot-wpc"] = {
+                "browser_path": [str(chrome)],
+            }
+
+        options["extractor_args"] = extractor_args
+
+        # yt-dlp-ejs needs an external JS runtime for current YouTube player
+        # challenges. QuickJS-NG is bundled with the desktop build.
         qjs = find_qjs()
         if qjs:
             options["js_runtimes"] = {"quickjs": {"path": str(qjs)}}
@@ -37,9 +56,16 @@ def friendly_error(message: str) -> str:
 
     if "sign in to confirm" in low and "not a bot" in low:
         return (
-            "YouTube отклонил запрос как автоматический. Insight уже использует PO Token provider, "
+            "YouTube отклонил запрос как автоматический. Insight использует PO Token provider, "
             "но YouTube иногда дополнительно ограничивает конкретные IP. Попробуйте ещё раз немного позже "
             "или смените сеть.\n\n"
+            f"Техническая ошибка:\n{msg}"
+        )
+
+    if "po token" in low or "pot provider" in low:
+        return (
+            "Не удалось получить YouTube PO Token. Убедитесь, что установлен Chrome или Chromium, "
+            "и повторите анализ ссылки.\n\n"
             f"Техническая ошибка:\n{msg}"
         )
 
@@ -52,7 +78,8 @@ def friendly_error(message: str) -> str:
 
     if "ffmpeg" in low or "ffprobe" in low:
         return (
-            "Медиадвижок FFmpeg ещё не установлен. Insight может установить его автоматически перед первой загрузкой.\n\n"
+            "Медиадвижок FFmpeg ещё не установлен. Insight устанавливает его автоматически при первом запуске "
+            "и повторно использует в следующих версиях.\n\n"
             f"Техническая ошибка:\n{msg}"
         )
 
