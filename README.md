@@ -1,95 +1,300 @@
-# Insight Downloader 0.7.2
+# Insight Downloader
 
-Insight Downloader is a compact Windows desktop downloader built on `yt-dlp`, PySide6 Essentials and FFmpeg.
-Version 0.7 focuses on product-grade UI/UX while keeping the lightweight runtime architecture introduced in 0.6.
+**Insight Downloader** — бесплатное приложение для Windows для скачивания видео и аудио с YouTube, VK Видео, Rutube и множества других сайтов, поддерживаемых [yt-dlp](https://github.com/yt-dlp/yt-dlp).
 
-## Product UI
+Приложение позволяет скачивать видео в лучшем доступном качестве или сохранять аудио в MP3 и WAV через простой графический интерфейс — без командной строки и сложной ручной настройки.
 
-The main window is intentionally fixed at **1000×720** and does not maximize. The complete download flow fits in one window without scrolling:
+> Текущая версия: **0.7.2**
 
-1. Paste or drop a link.
-2. Analyze it.
-3. Choose Video / MP3 / WAV.
-4. Pick video or audio quality.
-5. Download.
+---
 
-The 0.7 design system uses:
+## Возможности
 
-- Segoe UI Variable / Segoe UI
-- neutral dark/light surfaces
-- minimal borders and separators
-- one restrained purple primary accent
-- subtle hover feedback
-- explicit select chevrons
-- modal bottom-sheet errors
-- compact success states instead of permanent 100% progress bars
-- system / dark / light themes
+- скачивание видео с YouTube, VK Видео, Rutube и других сайтов;
+- поддержка большинства ресурсов, совместимых с yt-dlp;
+- автоматический анализ ссылки перед скачиванием;
+- скачивание видео в лучшем доступном качестве;
+- извлечение аудио в **MP3** и **WAV**;
+- выбор качества видео и аудио;
+- вставка ссылки из буфера обмена;
+- поддержка Drag & Drop;
+- выбор папки для сохранения файлов;
+- запоминание папки загрузок;
+- автоматическая проверка обновлений;
+- ручная проверка обновлений;
+- системная, тёмная и светлая темы;
+- встроенная диагностика необходимых компонентов;
+- автоматическая подготовка необходимых runtime-компонентов.
 
-## Audio quality
+---
 
-MP3 presets:
+## Интерфейс
 
-- 320 kbps
-- 256 kbps
-- 192 kbps
-- 128 kbps
+Insight Downloader спроектирован как компактное Windows-приложение с простым процессом загрузки:
 
-WAV presets:
+1. Вставьте или перетащите ссылку.
+2. Нажмите **«Анализировать»**.
+3. Выберите **Видео**, **MP3** или **WAV**.
+4. Выберите доступное качество.
+5. Нажмите **«Скачать»**.
 
-- source sample rate · 16-bit PCM
-- 48 kHz · 24-bit PCM
-- 48 kHz · 16-bit PCM
-- 44.1 kHz · 16-bit PCM
+Интерфейс выполнен в минималистичном стиле с нативной для Windows типографикой, спокойными цветами и единым фирменным акцентом.
 
-Insight downloads the best available source audio first and performs the selected conversion with FFmpeg.
+### Главный экран
 
-## Settings
+<!--
+Добавьте скриншот в:
+docs/screenshots/main.png
+-->
 
-Settings contains normal user-facing options only:
+<p align="center">
+  <img src="docs/screenshots/main.png" width="900" alt="Главное окно Insight Downloader">
+</p>
 
-- theme
-- default download directory
-- automatic update checks
-- current version / update check
+---
 
-Technical runtime information is hidden under **Diagnostics**.
+## Скачать
 
-## Development setup
+Готовые версии Insight Downloader публикуются в разделе **Releases** этого репозитория.
 
-Windows 10/11 x64 is the primary release target.
+Для обычного использования не требуется устанавливать Python, FFmpeg или другие инструменты вручную.
 
-```bat
-setup_windows.cmd
-run.cmd
+### Системные требования
+
+- Windows 10 или Windows 11;
+- 64-битная система;
+- подключение к интернету.
+
+Основной релизный таргет приложения — **Windows x64**.
+
+---
+
+## Поддерживаемые сайты
+
+Insight Downloader использует **yt-dlp**, поэтому список поддерживаемых сайтов зависит от доступных в yt-dlp экстракторов.
+
+В том числе поддерживаются:
+
+- YouTube;
+- VK Видео;
+- Rutube;
+- TikTok;
+- Vimeo;
+- Twitch;
+- SoundCloud;
+- и множество других ресурсов.
+
+Полный список может меняться вместе с обновлениями yt-dlp.
+
+Некоторые сайты периодически изменяют свои внутренние механизмы работы, поэтому совместимость может зависеть от текущей версии Insight Downloader и yt-dlp.
+
+---
+
+## Видео
+
+Для видео Insight Downloader получает доступные форматы через yt-dlp и позволяет выбрать подходящее качество перед скачиванием.
+
+При выборе лучшего доступного качества приложение автоматически использует наиболее подходящие видео- и аудиопотоки, доступные для конкретного источника.
+
+Набор доступных форматов зависит от сайта и самого видео.
+
+---
+
+## Аудио
+
+Для аудио Insight Downloader сначала загружает лучший доступный исходный аудиопоток, после чего выполняет преобразование с помощью FFmpeg.
+
+### MP3
+
+Доступные варианты:
+
+- 320 kbps;
+- 256 kbps;
+- 192 kbps;
+- 128 kbps.
+
+### WAV
+
+Доступные варианты:
+
+- исходная частота дискретизации · 16-bit PCM;
+- 48 kHz · 24-bit PCM;
+- 48 kHz · 16-bit PCM;
+- 44.1 kHz · 16-bit PCM.
+
+> Увеличение битрейта, частоты дискретизации или битовой глубины не улучшает качество исходного материала, если исходный поток имеет более низкое качество.
+
+---
+
+## YouTube
+
+Поддержка YouTube реализована с использованием:
+
+- `yt-dlp`;
+- `yt-dlp-ejs`;
+- QuickJS-NG;
+- WPC PO Token provider;
+- управляемого экземпляра Chromium для получения необходимых токенов.
+
+Insight Downloader **не читает базу cookies установленного у пользователя Google Chrome**.
+
+YouTube регулярно изменяет механизмы доставки контента, поэтому для стабильной работы рекомендуется использовать актуальную версию Insight Downloader.
+
+---
+
+## Обновления
+
+Insight Downloader умеет автоматически проверять наличие новых версий приложения.
+
+Проверку обновлений можно включить или отключить в настройках.
+
+Также доступна ручная проверка обновлений.
+
+Приложение и медиасреда FFmpeg распространяются отдельно. Благодаря этому при обычных обновлениях Insight Downloader не требуется повторно загружать FFmpeg.
+
+---
+
+## Media Runtime
+
+Для обработки видео и аудио Insight Downloader использует FFmpeg.
+
+FFmpeg распространяется отдельно в архиве:
+
+```text
+InsightMediaRuntime.7z
 ```
 
-For local media downloads, place:
+При необходимости медиасреда устанавливается в локальные данные пользователя и затем повторно используется следующими версиями приложения.
+
+Это позволяет уменьшить размер стандартных обновлений Insight Downloader.
+
+---
+
+## Настройки
+
+В настройках доступны основные пользовательские параметры:
+
+### Внешний вид
+
+- системная тема;
+- тёмная тема;
+- светлая тема.
+
+### Загрузки
+
+- папка загрузок по умолчанию.
+
+### Обновления
+
+- автоматическая проверка обновлений;
+- ручная проверка обновлений;
+- информация о текущей версии.
+
+### Диагностика
+
+Техническая информация скрыта в отдельном разделе **«Диагностика»**.
+
+В нём можно проверить состояние основных компонентов:
+
+- медиадвижка;
+- QuickJS;
+- Chromium.
+
+---
+
+## Конфиденциальность
+
+Insight Downloader не требует создания аккаунта для скачивания файлов.
+
+Обработка ссылок и управление загрузками выполняются непосредственно приложением.
+
+Insight Downloader не читает базу cookies установленного у пользователя Google Chrome.
+
+При анализе и скачивании контента приложение выполняет сетевые запросы к соответствующим сайтам и сервисам, необходимые для работы yt-dlp и используемых компонентов.
+
+---
+
+## Технологии
+
+Insight Downloader разработан с использованием:
+
+- Python 3.11;
+- PySide6;
+- yt-dlp;
+- FFmpeg;
+- QuickJS-NG;
+- Chromium;
+- Inno Setup.
+
+---
+
+# Разработка
+
+## Требования
+
+Основная среда разработки:
+
+- Windows 10 / Windows 11 x64;
+- Python 3.11;
+- Git.
+
+Для полной работы с медиа также необходимы:
 
 ```text
 bin/ffmpeg.exe
 bin/ffprobe.exe
 ```
 
-QuickJS is prepared automatically by the setup script.
+---
 
-## Production release
+## Подготовка проекта
 
-Requirements:
+После клонирования репозитория выполните:
 
-- Python 3.11
-- Inno Setup 6
-- Git
-- GitHub CLI (`gh`) for publishing
-- `bin/ffmpeg.exe`
-- `bin/ffprobe.exe`
+```bat
+setup_windows.cmd
+```
 
-Build:
+Скрипт подготовит виртуальное окружение и необходимые зависимости.
+
+QuickJS также подготавливается автоматически.
+
+---
+
+## Запуск
+
+Для запуска приложения в режиме разработки:
+
+```bat
+run.cmd
+```
+
+---
+
+# Сборка релиза
+
+## Требования
+
+Для production-сборки необходимы:
+
+- Python 3.11;
+- Inno Setup 6;
+- Git;
+- GitHub CLI (`gh`);
+- `bin/ffmpeg.exe`;
+- `bin/ffprobe.exe`.
+
+---
+
+## Сборка
+
+Запустите:
 
 ```bat
 build_release.cmd
 ```
 
-Expected output:
+После успешной сборки файлы появятся в каталоге:
 
 ```text
 release/
@@ -100,30 +305,95 @@ release/
 └── InsightMediaRuntime.7z.sha256
 ```
 
-Publish:
+---
+
+## Публикация
+
+Для публикации подготовленного релиза:
 
 ```bat
 publish_release.cmd
 ```
 
-## Distribution architecture
+Для работы скрипта требуется установленный и авторизованный GitHub CLI:
 
-The main installer contains the application, Qt Essentials, yt-dlp and QuickJS, but not FFmpeg.
-FFmpeg is distributed once as `InsightMediaRuntime.7z` and installed to the user's local app data on first use.
-Normal application updates therefore do not re-download the media runtime.
+```bat
+gh auth login
+```
 
-## YouTube
+---
 
-YouTube support uses:
+# Архитектура дистрибутива
 
-- yt-dlp
-- yt-dlp-ejs
-- QuickJS-NG
-- WPC PO Token provider
-- a managed Chromium instance for token acquisition
+Основной установщик Insight Downloader содержит:
 
-Insight does not read the user's Chrome cookie database.
+- приложение;
+- Qt / PySide6 runtime;
+- yt-dlp;
+- QuickJS;
+- необходимые компоненты приложения.
 
-## Legal
+FFmpeg не включается непосредственно в основной установщик.
 
-Use Insight Downloader only for content you are permitted to save. The application does not bypass DRM.
+Вместо этого медиасреда распространяется отдельно:
+
+```text
+InsightMediaRuntime.7z
+```
+
+После первой установки Media Runtime обычные обновления приложения могут использовать уже установленную версию FFmpeg.
+
+Таким образом уменьшается размер обновлений и объём повторно загружаемых данных.
+
+---
+
+# Структура релиза
+
+### Установщик
+
+```text
+InsightDownloaderSetup-v0.7.2.exe
+```
+
+Полная устанавливаемая версия Insight Downloader.
+
+### Обновление
+
+```text
+InsightDownloader-update.zip
+InsightDownloader-update.zip.sha256
+```
+
+Архив приложения для встроенной системы обновлений и его SHA-256 checksum.
+
+### Media Runtime
+
+```text
+InsightMediaRuntime.7z
+InsightMediaRuntime.7z.sha256
+```
+
+Отдельная медиасреда FFmpeg и её SHA-256 checksum.
+
+---
+
+# Правовая информация
+
+Insight Downloader предназначен для скачивания контента, который пользователь имеет право сохранять.
+
+Пользователь самостоятельно несёт ответственность за соблюдение:
+
+- авторского права;
+- условий использования соответствующих сайтов;
+- законодательства своей страны;
+- других применимых правил и ограничений.
+
+Insight Downloader не предназначен для обхода DRM и не выполняет обход DRM-защищённого контента.
+
+---
+
+## Insight Development
+
+**Insight Downloader** разработан в рамках **Insight Development**.
+
+© 2026 Insight Development
